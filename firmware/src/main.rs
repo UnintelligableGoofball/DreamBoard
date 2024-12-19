@@ -19,7 +19,7 @@ use keyberon::layout::{CustomEvent, Event, Layout};
 use keyberon::matrix::Matrix;
 use nb::block;
 use rtic::app;
-use stm32f0xx_hal as hal;
+use rp2040_hal as hal;
 use usb_device::bus::UsbBusAllocator;
 use usb_device::class::UsbClass as _;
 use usb_device::device::UsbDeviceState;
