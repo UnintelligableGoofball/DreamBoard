@@ -1,3 +1,0 @@
-use <functions.scad>
-
-plate();
