@@ -1,16 +1,13 @@
 [package]
-name = "keyseebee"
+name = "dreamboard"
 version = "0.1.0"
-authors = ["Guillaume Pinot <texitoi@texitoi.eu>"]
+authors = ["Guillaume Pinot <texitoi@texitoi.eu>" "Blue Spies <unfixedsoup@proton.me>"]
 edition = "2018"
 
 [dependencies]
-stm32f0xx-hal = { version = "0.18.0", features = ["rt", "stm32f072", "stm32-usbd"] }
-cortex-m = "0.7"
-cortex-m-rt = { version = "0.7.1", features = ["device"] }
+adafruit-kb2040 = "0.8.0"
 panic-halt = "0.2.0"
 keyberon = { git = "https://github.com/TeXitoi/keyberon" }
-cortex-m-rtic = "1.0.0"
 embedded-hal = "0.2"
 usb-device = "0.2.0"
 nb = "1.0.0"
