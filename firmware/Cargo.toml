@@ -18,8 +18,14 @@ embedded-hal ="0.2.5"
 rp2040-hal = { version = "0.5.0", features = ["rt"] }
 adafruit-KB2040 = "0.4.1"
 
+[profile.dev]
+lto = true
+incremental = true
+opt-level = "z"
+debug = true
+
 [profile.release]
 lto = true
 incremental = false
 opt-level = "z"
-debug = true
+debug = false
