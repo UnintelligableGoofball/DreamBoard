@@ -5,14 +5,8 @@ authors = ["Blue Spies <unfixedsoup@proton.me>"]
 edition = "2018"
 
 [dependencies]
-usb-device= "0.2.8"
-usbd-serial = "0.1.1"
-usbd-hid = "0.5.0"
-keyberon = { git = "https://github.com/TeXitoi/keyberon", rev = "29e960e7ca0a1f79196e441a4abd65a7d9f79ea5" }
-panic-halt= "0.2.0"
-embedded-hal = "0.2.5"
-rp2040-hal = { version = "0.10.0", features = ["rt"] }
 adafruit-kb2040 = "0.8.0"
+panic-probe = "0.3.0"
 
 [profile.dev]
 lto = true
