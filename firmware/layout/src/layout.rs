@@ -39,7 +39,7 @@ fn parse_a(a: &'static str) -> Result<Action, LayoutErr> {
     const UNDO: Action = m(&[LeftControl, Z].as_slice());
 
     match a {
-        "NUBS" => Ok(k(NonUSBackslash)),
+        "NUBS" => Ok(k(Bslash)),
         "PIPE" => Ok(K_PIPE),
         "BKTK" => Ok(k(Grave)),
         "ENT" => Ok(k(ReturnEnter)),
