@@ -22,7 +22,7 @@ pub enum LayoutErr {
 
 fn parse_a(a: &'static str) -> Result<Action, LayoutErr> {
     // need to be able to make static references to these
-    const K_PIPE: Action = m(&[LeftShift, NonUSBackslash].as_slice());
+    const K_PIPE: Action = m(&[LeftShift, Backslash].as_slice());
     const K_LBRA: Action = m(&[LeftShift, LeftBrace].as_slice());
     const K_RBRA: Action = m(&[LeftShift, RightBrace].as_slice());
     const K_LPAR: Action = m(&[LeftShift, Keyboard9].as_slice());
@@ -39,7 +39,7 @@ fn parse_a(a: &'static str) -> Result<Action, LayoutErr> {
     const UNDO: Action = m(&[LeftControl, Z].as_slice());
 
     match a {
-        "NUBS" => Ok(k(Bslash)),
+        "NUBS" => Ok(k(Backslash)),
         "PIPE" => Ok(K_PIPE),
         "BKTK" => Ok(k(Grave)),
         "ENT" => Ok(k(ReturnEnter)),
@@ -237,7 +237,7 @@ mod test {
 
     #[test]
     fn test_parse_a() {
-        assert_eq!(Ok(k(NonUSBackslash)), parse_a("NUBS"));
+        assert_eq!(Ok(k(Backslash)), parse_a("NUBS"));
         assert_eq!(Err(LayoutErr::UnsupportedAction("BLAH")), parse_a("BLAH"));
     }
 
@@ -261,7 +261,7 @@ mod test {
 
     #[test]
     fn test_action() {
-        assert_eq!(Ok(k(NonUSBackslash)), parse_action("@NUBS"));
+        assert_eq!(Ok(k(Backslash)), parse_action("@NUBS"));
         assert_eq!(Ok(k(A)), parse_action(":A"));
         assert_eq!(Ok(k(Keyboard0)), parse_action(":0"));
         assert_eq!(Ok(l(1)), parse_action("L1"));

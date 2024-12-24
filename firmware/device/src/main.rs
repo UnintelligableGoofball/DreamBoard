@@ -5,8 +5,6 @@
 use rp2040_panic_usb_boot as _;
 use rtic::app;
 
-mod touchpad;
-
 #[link_section = ".config"]
 static LAYOUT: &str = include_str!("layout.txt");
 
@@ -17,7 +15,6 @@ mod app {
     use defmt::*;
     use defmt_rtt as _;
 
-    use crate::touchpad;
     use ::layout::*;
     use embedded_hal::{
         digital::v2::{InputPin, OutputPin},
@@ -43,7 +40,6 @@ mod app {
         device::{
             consumer::{ConsumerControlInterface, MultipleConsumerReport},
             keyboard::NKROBootKeyboardInterface,
-            mouse::{WheelMouseInterface, WheelMouseReport},
         },
         hid_class::{UsbHidClass, UsbHidClassBuilder},
         page::{Consumer, Keyboard},
@@ -52,7 +48,6 @@ mod app {
     use ws2812_pio::Ws2812Direct;
 
     type UsbCompositeInterfaceList = HCons<
-        WheelMouseInterface<'static, UsbBus>,
         HCons<
             ConsumerControlInterface<'static, UsbBus>,
             HCons<NKROBootKeyboardInterface<'static, UsbBus>, HNil>,
@@ -66,38 +61,18 @@ mod app {
     const VID: u16 = 0x1209;
     const PID: u16 = 0x0001;
 
-    //FIXED PINS
     type UartPins = (
         hal::gpio::Pin<hal::gpio::pin::bank0::Gpio12, hal::gpio::Function<hal::gpio::Uart>>,
         hal::gpio::Pin<hal::gpio::pin::bank0::Gpio13, hal::gpio::Function<hal::gpio::Uart>>,
     );
     type UartDevice = hal::uart::UartPeripheral<hal::uart::Enabled, hal::pac::UART0, UartPins>;
 
-    //FIXED PINS
     type StatusLed = Ws2812Direct<hal::pac::PIO0, hal::pio::SM0, hal::gpio::pin::bank0::Gpio17>;
+    type LayerLed = Ws2812Direct<hal::pac::PIO1, hal::pio::SM0, hal::gpio::pin::bank0::Gpio20>;
     enum StatusVal {
         Layer(usize),
         Bootloader,
     }
-
-    //NOT USING THIS STUFF
-    /*This was for a touchpad on the eskarp
-    type IQS5xxRdyPin = hal::gpio::Pin<hal::gpio::bank0::Gpio, hal::gpio::FloatingInput>;
-    type IQS5xxRstPin = hal::gpio::Pin<hal::gpio::bank0::Gpio, hal::gpio::PushPullOutput>;
-    type I2CSDAPin = hal::gpio::Pin<hal::gpio::bank0::Gpio, hal::gpio::FunctionI2C>;
-    type I2CSCLPin = hal::gpio::Pin<hal::gpio::bank0::Gpio, hal::gpio::FunctionI2C>;
-    type IQS5xx = iqs5xx::IQS5xx<
-        hal::I2C<hal::pac::I2C0, (I2CSDAPin, I2CSCLPin)>,
-        IQS5xxRdyPin,
-        IQS5xxRstPin,
-    >;
-    type Touchpad = touchpad::Touchpad<
-        hal::I2C<hal::pac::I2C0, (I2CSDAPin, I2CSCLPin)>,
-        IQS5xxRdyPin,
-        IQS5xxRstPin,
-        AppTimer,
-    >;
-    */
 
     pub struct KeyboardState {
         matrix: Matrix<DynPin, DynPin, KBDSIZE_COLS, KBDSIZE_ROWS>,
@@ -151,6 +126,7 @@ mod app {
         kbd_state: KeyboardState,
         is_left: bool,
         status_led: StatusLed,
+        layer_led: LayerLed,
         transform: fn(Event) -> Event,
         delay: cortex_m::delay::Delay,
     }
@@ -187,11 +163,10 @@ mod app {
             &mut resets,
         );
 
-        //FIXED PINS
         let uart_pins = (
-            // UART TX (characters sent from RP2040) on pin 1 (GPIO0)
+            // UART TX (characters sent from RP2040) on pin 12 (GPIO12)
             pins.gpio12.into_mode::<hal::gpio::FunctionUart>(),
-            // UART RX (characters received by RP2040) on pin 2 (GPIO1)
+            // UART RX (characters received by RP2040) on pin 13 (GPIO13)
             pins.gpio13.into_mode::<hal::gpio::FunctionUart>(),
         );
 
@@ -209,7 +184,6 @@ mod app {
             .unwrap();
         uart.enable_rx_interrupt();
 
-        //FIXED PINS
         let kbd_side_pin = pins.gpio0.into_pull_up_input();
         let is_left = kbd_side_pin.is_low().unwrap();
         let transform: fn(Event) -> Event = if is_left {
@@ -218,7 +192,6 @@ mod app {
             |e| e.transform(|i, j| (i, j + KBDSIZE_COLS as u8))
         };
 
-        //FIXED PINS
         let rows: [DynPin; KBDSIZE_ROWS] = [
             pins.gpio1.into(),
             pins.gpio2.into(),
@@ -239,7 +212,6 @@ mod app {
         let mut delay =
             cortex_m::delay::Delay::new(c.core.SYST, clocks.system_clock.freq().to_Hz());
 
-        //FIXED PINS
         let (mut pio, sm0, _, _, _) = c.device.PIO0.split(&mut resets);
         let mut status_led = Ws2812Direct::new(
             pins.gpio17.into_mode(),
@@ -330,6 +302,7 @@ mod app {
             kbd_state,
             is_left,
             status_led,
+            layer_led,
             transform,
             delay,
         };
@@ -609,33 +582,5 @@ mod app {
 
     fn do_reset() {
         hal::rom_data::reset_to_usb_boot(0, 0);
-    }
-
-    pub struct AppTimer {
-        tick_handle: Option<move_tick::SpawnHandle>,
-    }
-
-    impl AppTimer {
-        fn new() -> Self {
-            AppTimer { tick_handle: None }
-        }
-    }
-
-    impl touchpad::Timer for AppTimer {
-        fn start(&mut self, delay: u64) {
-            self.cancel();
-            self.tick_handle = move_tick::spawn_after(delay.millis()).ok();
-        }
-
-        fn cancel(&mut self) {
-            let old_handle = self.tick_handle.take();
-            if let Some(h) = old_handle {
-                h.cancel().ok();
-            }
-        }
-
-        fn reschedule(&mut self, interval: u64) {
-            self.tick_handle = move_tick::spawn_after(interval.millis()).ok();
-        }
     }
 }
