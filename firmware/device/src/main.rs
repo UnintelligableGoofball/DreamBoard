@@ -66,22 +66,26 @@ mod app {
     const VID: u16 = 0x1209;
     const PID: u16 = 0x0001;
 
+    //FIXED PINS
     type UartPins = (
-        hal::gpio::Pin<hal::gpio::pin::bank0::Gpio0, hal::gpio::Function<hal::gpio::Uart>>,
-        hal::gpio::Pin<hal::gpio::pin::bank0::Gpio1, hal::gpio::Function<hal::gpio::Uart>>,
+        hal::gpio::Pin<hal::gpio::pin::bank0::Gpio12, hal::gpio::Function<hal::gpio::Uart>>,
+        hal::gpio::Pin<hal::gpio::pin::bank0::Gpio13, hal::gpio::Function<hal::gpio::Uart>>,
     );
     type UartDevice = hal::uart::UartPeripheral<hal::uart::Enabled, hal::pac::UART0, UartPins>;
 
-    type StatusLed = Ws2812Direct<hal::pac::PIO0, hal::pio::SM0, hal::gpio::pin::bank0::Gpio26>;
+    //FIXED PINS
+    type StatusLed = Ws2812Direct<hal::pac::PIO0, hal::pio::SM0, hal::gpio::pin::bank0::Gpio17>;
     enum StatusVal {
         Layer(usize),
         Bootloader,
     }
 
-    type IQS5xxRdyPin = hal::gpio::Pin<hal::gpio::bank0::Gpio10, hal::gpio::FloatingInput>;
-    type IQS5xxRstPin = hal::gpio::Pin<hal::gpio::bank0::Gpio11, hal::gpio::PushPullOutput>;
-    type I2CSDAPin = hal::gpio::Pin<hal::gpio::bank0::Gpio12, hal::gpio::FunctionI2C>;
-    type I2CSCLPin = hal::gpio::Pin<hal::gpio::bank0::Gpio13, hal::gpio::FunctionI2C>;
+    //NOT USING THIS STUFF
+    /*This was for a touchpad on the eskarp
+    type IQS5xxRdyPin = hal::gpio::Pin<hal::gpio::bank0::Gpio, hal::gpio::FloatingInput>;
+    type IQS5xxRstPin = hal::gpio::Pin<hal::gpio::bank0::Gpio, hal::gpio::PushPullOutput>;
+    type I2CSDAPin = hal::gpio::Pin<hal::gpio::bank0::Gpio, hal::gpio::FunctionI2C>;
+    type I2CSCLPin = hal::gpio::Pin<hal::gpio::bank0::Gpio, hal::gpio::FunctionI2C>;
     type IQS5xx = iqs5xx::IQS5xx<
         hal::I2C<hal::pac::I2C0, (I2CSDAPin, I2CSCLPin)>,
         IQS5xxRdyPin,
@@ -93,6 +97,7 @@ mod app {
         IQS5xxRstPin,
         AppTimer,
     >;
+    */
 
     pub struct KeyboardState {
         matrix: Matrix<DynPin, DynPin, KBDSIZE_COLS, KBDSIZE_ROWS>,
@@ -129,7 +134,7 @@ mod app {
 
     const KBD_SCAN_PERIOD: Duration = Duration::millis(1);
     const USB_KBD_TICK_PERIOD: Duration = Duration::millis(1);
-
+    
     #[shared]
     struct Shared {
         layout: Layout,
@@ -137,8 +142,9 @@ mod app {
         usb_class: UsbCompositeClass<'static>,
         uart: UartDevice,
         rxbuf: [u8; 4],
-        touchpad: Option<Touchpad>,
+        //touchpad: Option<Touchpad>,
     }
+    
 
     #[local]
     struct Local {
@@ -181,11 +187,12 @@ mod app {
             &mut resets,
         );
 
+        //FIXED PINS
         let uart_pins = (
             // UART TX (characters sent from RP2040) on pin 1 (GPIO0)
-            pins.gpio0.into_mode::<hal::gpio::FunctionUart>(),
+            pins.gpio12.into_mode::<hal::gpio::FunctionUart>(),
             // UART RX (characters received by RP2040) on pin 2 (GPIO1)
-            pins.gpio1.into_mode::<hal::gpio::FunctionUart>(),
+            pins.gpio13.into_mode::<hal::gpio::FunctionUart>(),
         );
 
         // Make a UART on the given pins
@@ -202,7 +209,8 @@ mod app {
             .unwrap();
         uart.enable_rx_interrupt();
 
-        let kbd_side_pin = pins.gpio28.into_pull_up_input();
+        //FIXED PINS
+        let kbd_side_pin = pins.gpio0.into_pull_up_input();
         let is_left = kbd_side_pin.is_low().unwrap();
         let transform: fn(Event) -> Event = if is_left {
             |e| e
@@ -210,36 +218,39 @@ mod app {
             |e| e.transform(|i, j| (i, j + KBDSIZE_COLS as u8))
         };
 
+        //FIXED PINS
         let rows: [DynPin; KBDSIZE_ROWS] = [
-            pins.gpio16.into(),
-            pins.gpio17.into(),
-            pins.gpio18.into(),
-            pins.gpio19.into(),
-            pins.gpio20.into(),
-        ];
-        let cols: [DynPin; KBDSIZE_COLS] = [
+            pins.gpio1.into(),
             pins.gpio2.into(),
             pins.gpio3.into(),
             pins.gpio4.into(),
             pins.gpio5.into(),
             pins.gpio6.into(),
+        ];
+        let cols: [DynPin; KBDSIZE_COLS] = [
             pins.gpio7.into(),
             pins.gpio8.into(),
+            pins.gpio9.into(),
+            pins.gpio10.into(),
+            pins.gpio19.into(),
         ];
         let kbd_state = KeyboardState::new(rows, cols);
 
         let mut delay =
             cortex_m::delay::Delay::new(c.core.SYST, clocks.system_clock.freq().to_Hz());
 
+        //FIXED PINS
         let (mut pio, sm0, _, _, _) = c.device.PIO0.split(&mut resets);
         let mut status_led = Ws2812Direct::new(
-            pins.gpio26.into_mode(),
+            pins.gpio17.into_mode(),
             &mut pio,
             sm0,
             clocks.peripheral_clock.freq(),
         );
         update_status_led(&mut status_led, StatusVal::Layer(0), 0);
 
+        //touchpad stuff ig
+        /*
         // Configure I²C interface
         let sda_pin = pins.gpio12.into_mode::<hal::gpio::FunctionI2C>();
         let scl_pin = pins.gpio13.into_mode::<hal::gpio::FunctionI2C>();
@@ -251,7 +262,10 @@ mod app {
             &mut resets,
             &clocks.system_clock,
         );
+        */
 
+        //touchpad stuff
+        /*
         // create ready pin handler - using IRQs and WFI
         let rdy_pin: IQS5xxRdyPin = pins.gpio10.into_floating_input();
         rdy_pin.set_interrupt_enabled(hal::gpio::Interrupt::EdgeHigh, true);
@@ -267,6 +281,7 @@ mod app {
                 None
             }
         };
+        */
 
         // Set up the USB driver
         let usb_bus = UsbBusAllocator::new(hal::usb::UsbBus::new(
@@ -285,11 +300,13 @@ mod app {
         let usb_class = UsbHidClassBuilder::new()
             .add_interface(NKROBootKeyboardInterface::default_config())
             .add_interface(ConsumerControlInterface::default_config())
-            .add_interface(WheelMouseInterface::default_config())
+            //touchpad thing i think
+            //.add_interface(WheelMouseInterface::default_config())
             .build(&usb_bus);
         let usb_dev = UsbDeviceBuilder::new(usb_bus, UsbVidPid(VID, PID))
-            .manufacturer("rwalkr")
-            .product("eskarp")
+        //FIXED THESE
+            .manufacturer("Blue")
+            .product("DreamBoard")
             .serial_number(env!("CARGO_PKG_VERSION"))
             .supports_remote_wakeup(true)
             .build();
@@ -307,7 +324,7 @@ mod app {
             usb_class,
             uart,
             rxbuf: [0; 4],
-            touchpad,
+            //touchpad,
         };
         let local = Local {
             kbd_state,
@@ -339,6 +356,8 @@ mod app {
         });
     }
 
+    //Touchpad stuff
+    /*
     #[task(binds = IO_IRQ_BANK0, priority = 2, shared = [touchpad])]
     fn io_irq(c: io_irq::Context) {
         let mut touchpad = c.shared.touchpad;
@@ -358,6 +377,7 @@ mod app {
             }
         });
     }
+        */
 
     #[task(local = [kbd_state, transform, delay], shared = [uart])]
     fn kbd_scan(c: kbd_scan::Context) {
@@ -528,6 +548,8 @@ mod app {
         });
     }
 
+    //touchpad
+    /*
     #[task(shared = [usb_class], capacity = 8)]
     fn send_mouse_report(c: send_mouse_report::Context, report: WheelMouseReport) {
         let mut usb_class = c.shared.usb_class;
@@ -556,6 +578,7 @@ mod app {
             }
         });
     }
+    */
 
     fn de(bytes: &[u8]) -> Result<Event, ()> {
         match *bytes {

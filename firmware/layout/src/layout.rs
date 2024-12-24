@@ -281,17 +281,18 @@ mod test {
     }
 
     const LAYOUT: &str = "
-    @ESC   :1     :2     :3     :4     :5     .      | .      :6     :7     :8     :9     :0     @DASH
+:1      :2      :3      :4      :5      | :6        :7      :8      :9      :0
+
 @LALT  :Q     :W     :E     :R     :T     .      | .      :Y     :U     :I     :O     :P     @EQ
 @LSHFT :A     :S     :D     :F     :G     .      | .      :H     :J     :K     :L     @SEMI  @QUOT
 @LCTRL :Z     :X     :C     :V     :B     @ENT   | @BSP   :N     :M     @COMMA @DOT   @SLSH  @HASH
 .      .      @LGUI  L2     @LALT  L1     @SPC   | @TAB   L2     @LALT  @LGUI  @LCTRL .      .
 
-_      F1     F2     F3     F4     F5     .      | .      F6     F7     F8     F9     F10    @APP
+_      F1     F2     F3     F4     F5     .      | .      F6         F7     F8     F9     F10    @APP
 @LALT  F11    F12    F13    F14    F15    .      | .      @PGUP  @HOME  @UP    @END   _      _
 @LSHFT _      @CUT   @COPY  @PASTE _      .      | .      @PGDN  @LEFT  @DOWN  @RIGHT _      @INS
 @LCTRL _      _      _      @UNDO  _      _      | @DEL   _      _      _      _      _      @DEL
-.      .      @LGUI  D0     @LALT  D0     _      | _      L2     @LALT  @LGUI  @LCTRL .      @RSTR
+.      .      @LGUI  D0     @LALT  D0     _      | _      L2     @LALT  @LGUI  @LCTRL .      @RST       
     ";
 
     #[test]
