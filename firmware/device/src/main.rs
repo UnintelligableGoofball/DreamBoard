@@ -21,7 +21,7 @@ mod app {
         serial::{Read, Write},
     };
     use frunk::{HCons, HNil};
-    use fugit::{ExtU64, RateExtU32};
+    use fugit::RateExtU32;
     use keyberon::debounce::Debouncer;
     use keyberon::layout::{CustomEvent, Event};
     use keyberon::matrix::Matrix;
@@ -48,10 +48,8 @@ mod app {
     use ws2812_pio::Ws2812Direct;
 
     type UsbCompositeInterfaceList = HCons<
-        HCons<
-            ConsumerControlInterface<'static, UsbBus>,
-            HCons<NKROBootKeyboardInterface<'static, UsbBus>, HNil>,
-        >,
+        ConsumerControlInterface<'static, UsbBus>,
+        HCons<NKROBootKeyboardInterface<'static, UsbBus>, HNil>,
     >;
     type UsbCompositeClass<'a> = UsbHidClass<hal::usb::UsbBus, UsbCompositeInterfaceList>;
     type UsbDevice = usb_device::device::UsbDevice<'static, hal::usb::UsbBus>;
@@ -67,8 +65,7 @@ mod app {
     );
     type UartDevice = hal::uart::UartPeripheral<hal::uart::Enabled, hal::pac::UART0, UartPins>;
 
-    type StatusLed = Ws2812Direct<hal::pac::PIO0, hal::pio::SM0, hal::gpio::pin::bank0::Gpio17>;
-    type LayerLed = Ws2812Direct<hal::pac::PIO1, hal::pio::SM0, hal::gpio::pin::bank0::Gpio20>;
+    type StatusLed = Ws2812Direct<hal::pac::PIO0, hal::pio::SM0, hal::gpio::pin::bank0::Gpio20>;
     enum StatusVal {
         Layer(usize),
         Bootloader,
@@ -126,7 +123,6 @@ mod app {
         kbd_state: KeyboardState,
         is_left: bool,
         status_led: StatusLed,
-        layer_led: LayerLed,
         transform: fn(Event) -> Event,
         delay: cortex_m::delay::Delay,
     }
@@ -209,12 +205,12 @@ mod app {
         ];
         let kbd_state = KeyboardState::new(rows, cols);
 
-        let mut delay =
+        let delay =
             cortex_m::delay::Delay::new(c.core.SYST, clocks.system_clock.freq().to_Hz());
 
         let (mut pio, sm0, _, _, _) = c.device.PIO0.split(&mut resets);
         let mut status_led = Ws2812Direct::new(
-            pins.gpio17.into_mode(),
+            pins.gpio20.into_mode(),
             &mut pio,
             sm0,
             clocks.peripheral_clock.freq(),
@@ -302,7 +298,6 @@ mod app {
             kbd_state,
             is_left,
             status_led,
-            layer_led,
             transform,
             delay,
         };
