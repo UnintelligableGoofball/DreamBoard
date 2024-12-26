@@ -4,10 +4,10 @@ use usbd_human_interface_device::page::{Consumer, Keyboard};
 
 pub mod layout;
 
-pub const KBDSIZE_COLS: usize = 7;
+pub const KBDSIZE_COLS: usize = 5;
 pub const KBDSIZE_COLS_2: usize = KBDSIZE_COLS * 2;
-pub const KBDSIZE_ROWS: usize = 5;
-pub const KBDSIZE_LAYERS: usize = 4;
+pub const KBDSIZE_ROWS: usize = 6;
+pub const KBDSIZE_LAYERS: usize = 3;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum CustomKey {
