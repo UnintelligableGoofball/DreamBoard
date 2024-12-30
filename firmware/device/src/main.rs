@@ -216,7 +216,7 @@ mod app {
             sm0,
             clocks.peripheral_clock.freq(),
         );
-        update_status_led(&mut status_led, StatusVal::Layer(0), 0);
+        update_status_led(&mut status_led, StatusVal::Layer(0));
 
         // Set up the USB driver
         let usb_bus = UsbBusAllocator::new(hal::usb::UsbBus::new(
@@ -361,12 +361,12 @@ mod app {
                     }
                     if *rset_count >= 5 {
                         *rset_count = 0;
-                        update_status_led(status_led, StatusVal::Bootloader, 0);
+                        update_status_led(status_led, StatusVal::Bootloader);
                         if *rset_left == is_left {
                             do_reset();
                         }
                     } else {
-                        update_status_led(status_led, StatusVal::Layer(*cur_layer), *rset_count);
+                        update_status_led(status_led, StatusVal::Layer(*cur_layer));
                     }
                 }
                 CustomEvent::Press(CustomKey::Media(k)) => {
@@ -391,7 +391,7 @@ mod app {
                 if *cur_layer != 3 {
                     *rset_count = 0;
                 }
-                update_status_led(status_led, StatusVal::Layer(*cur_layer), *rset_count);
+                update_status_led(status_led, StatusVal::Layer(*cur_layer));
             }
 
             let keycodes: heapless::Vec<Keyboard, 70> = layout.keycodes().collect();
@@ -475,16 +475,16 @@ mod app {
         }
     }
 
-    fn update_status_led(status_led: &mut StatusLed, status: StatusVal, rset_count: u32) {
+    fn update_status_led(status_led: &mut StatusLed, status: StatusVal) {
         let led_color: RGB8 = match status {
             StatusVal::Layer(1) => (0, 0, 20),
             StatusVal::Layer(2) => (4, 0, 16),
-            StatusVal::Layer(3) => (8 + 8 * rset_count as u8, 0, 0),
             StatusVal::Bootloader => (8, 4, 0),
             _ => (0, 0, 0),
         }
         .into();
-        status_led.write([led_color,led_color,led_color,led_color,led_color,led_color,led_color].iter().copied()).unwrap();
+        let led_array = [led_color; 7];
+        status_led.write(led_array.iter().copied()).unwrap();
     }
 
     fn do_reset() {
