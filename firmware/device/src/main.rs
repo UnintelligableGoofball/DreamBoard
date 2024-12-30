@@ -45,7 +45,8 @@ mod app {
         page::{Consumer, Keyboard},
         UsbHidError,
     };
-    use ws2812_pio::Ws2812Direct;
+    use ws2812_pio::Ws2812Direct; //old lights code
+    //use ws2812_pio::Ws2812;
 
     type UsbCompositeInterfaceList = HCons<
         ConsumerControlInterface<'static, UsbBus>,
@@ -217,40 +218,6 @@ mod app {
         );
         update_status_led(&mut status_led, StatusVal::Layer(0), 0);
 
-        //touchpad stuff ig
-        /*
-        // Configure I²C interface
-        let sda_pin = pins.gpio12.into_mode::<hal::gpio::FunctionI2C>();
-        let scl_pin = pins.gpio13.into_mode::<hal::gpio::FunctionI2C>();
-        let i2c = hal::I2C::i2c0(
-            c.device.I2C0,
-            sda_pin,
-            scl_pin,
-            400.kHz(),
-            &mut resets,
-            &clocks.system_clock,
-        );
-        */
-
-        //touchpad stuff
-        /*
-        // create ready pin handler - using IRQs and WFI
-        let rdy_pin: IQS5xxRdyPin = pins.gpio10.into_floating_input();
-        rdy_pin.set_interrupt_enabled(hal::gpio::Interrupt::EdgeHigh, true);
-        let rst_pin: IQS5xxRstPin = pins.gpio11.into_push_pull_output();
-
-        info!("Init IQS5xx");
-        let iqs = IQS5xx::new(i2c, 0x74, rdy_pin, rst_pin);
-        let timer = AppTimer::new();
-        let touchpad = match Touchpad::new(iqs, timer, &mut delay) {
-            Ok(t) => Some(t),
-            Err(e) => {
-                warn!("IQS5xx touchpad not found: {}", e);
-                None
-            }
-        };
-        */
-
         // Set up the USB driver
         let usb_bus = UsbBusAllocator::new(hal::usb::UsbBus::new(
             c.device.USBCTRL_REGS,
@@ -323,29 +290,6 @@ mod app {
             }
         });
     }
-
-    //Touchpad stuff
-    /*
-    #[task(binds = IO_IRQ_BANK0, priority = 2, shared = [touchpad])]
-    fn io_irq(c: io_irq::Context) {
-        let mut touchpad = c.shared.touchpad;
-
-        touchpad.lock(|touchpad| {
-            if let Some(touchpad) = touchpad {
-                touchpad.clear_irq(|pin: &mut IQS5xxRdyPin| {
-                    if pin.interrupt_status(hal::gpio::Interrupt::EdgeHigh) {
-                        // clear the IRQ
-                        pin.clear_interrupt(hal::gpio::Interrupt::EdgeHigh);
-                    }
-                });
-
-                touchpad.process(|rep, delay| {
-                    send_mouse_report::spawn_after(Duration::millis(delay as u64), rep).ok();
-                });
-            }
-        });
-    }
-        */
 
     #[task(local = [kbd_state, transform, delay], shared = [uart])]
     fn kbd_scan(c: kbd_scan::Context) {
@@ -516,38 +460,6 @@ mod app {
         });
     }
 
-    //touchpad
-    /*
-    #[task(shared = [usb_class], capacity = 8)]
-    fn send_mouse_report(c: send_mouse_report::Context, report: WheelMouseReport) {
-        let mut usb_class = c.shared.usb_class;
-        usb_class.lock(|usb_class| {
-            match usb_class
-                .interface::<WheelMouseInterface<'_, _>, _>()
-                .write_report(&report)
-            {
-                Err(UsbHidError::WouldBlock) | Err(UsbHidError::Duplicate) | Ok(_) => {}
-                Err(e) => {
-                    core::panic!("Failed to write mouse report: {:?}", e);
-                }
-            }
-        });
-    }
-
-    #[task(shared = [touchpad])]
-    fn move_tick(c: move_tick::Context) {
-        let mut touchpad = c.shared.touchpad;
-
-        touchpad.lock(|touchpad| {
-            if let Some(touchpad) = touchpad {
-                touchpad.tick(&mut |report| {
-                    send_mouse_report::spawn(report).ok();
-                });
-            }
-        });
-    }
-    */
-
     fn de(bytes: &[u8]) -> Result<Event, ()> {
         match *bytes {
             [b'P', i, j, b'\n'] => Ok(Event::Press(i, j)),
@@ -565,14 +477,14 @@ mod app {
 
     fn update_status_led(status_led: &mut StatusLed, status: StatusVal, rset_count: u32) {
         let led_color: RGB8 = match status {
-            StatusVal::Layer(1) => (0, 0, 8),
-            StatusVal::Layer(2) => (0, 8, 0),
+            StatusVal::Layer(1) => (0, 0, 20),
+            StatusVal::Layer(2) => (4, 0, 16),
             StatusVal::Layer(3) => (8 + 8 * rset_count as u8, 0, 0),
             StatusVal::Bootloader => (8, 4, 0),
             _ => (0, 0, 0),
         }
         .into();
-        status_led.write([led_color].iter().copied()).unwrap();
+        status_led.write([led_color,led_color,led_color,led_color,led_color,led_color,led_color].iter().copied()).unwrap();
     }
 
     fn do_reset() {
