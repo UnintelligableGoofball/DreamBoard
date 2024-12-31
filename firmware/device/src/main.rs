@@ -184,7 +184,7 @@ mod app {
         let kbd_side_pin = pins.gpio0.into_pull_up_input();
         let is_left = kbd_side_pin.is_low().unwrap();
         let transform: fn(Event) -> Event = if is_left {
-            |e| e
+            |e| e.transform(|i, j| (i, KBDSIZE_COLS as u8 - (j + 1)))
         } else {
             |e| e.transform(|i, j| (i, j + KBDSIZE_COLS as u8))
         };
