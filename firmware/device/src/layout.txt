@@ -10,7 +10,7 @@ t       t       t       t       t       | t       t       t       t       t
 t       t       t       t       t       | t       t       t       t       t
 t       t       t       t       t       | t       t       t       t       t
 @TAB    .       .       .       @LSHFT  | .       .       .       @NUBS   .
-.       .       .       .       @LALT   | @LCRTL  .       .       .       .
+.       .       .       .       @LALT   | .       @LCTRL  .       .       .
 
 .       .       .       .       .       | .       .       .       .       .
 .       7       8       9       .       | .       .       .       .       .
