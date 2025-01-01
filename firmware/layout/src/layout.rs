@@ -2,7 +2,7 @@ use crate::Action;
 use crate::CustomKey;
 use crate::Layers;
 
-use keyberon::action::{d, k, l, m, Action::*};
+use keyberon::action::{d, k, l, m, Action::*, HoldTapAction, HoldTapConfig};
 use usbd_human_interface_device::page::{Consumer, Keyboard, Keyboard::*};
 
 pub fn make_keymap(layout: &'static str) -> Result<Layers, LayoutErr> {
@@ -38,7 +38,22 @@ fn parse_a(a: &'static str) -> Result<Action, LayoutErr> {
     const PASTE: Action = m(&[LeftControl, V].as_slice());
     const UNDO: Action = m(&[LeftControl, Z].as_slice());
 
+    macro_rules! hold_tap {
+        ($hold:expr, $tap:expr) => {
+            HoldTap(&HoldTapAction {
+                timeout: 200,
+                tap_hold_interval: 0,
+                config: HoldTapConfig::Default,
+                hold: $hold,
+                tap: k($tap),
+            })
+        };
+    }
+
+    const K_SHLETE: Action = hold_tap!(k(LeftShift), DeleteForward);
+
     match a {
+        "SHLETE" => Ok(K_SHLETE),
         "NUBS" => Ok(k(Backslash)),
         "PIPE" => Ok(K_PIPE),
         "BKTK" => Ok(k(Grave)),
@@ -170,6 +185,7 @@ fn parse_d(c: Option<u8>) -> Result<Action, LayoutErr> {
 fn parse_action(a: &'static str) -> Result<Action, LayoutErr> {
     match a {
         "_" | "." => Ok(NoOp),
+        "t" => Ok(Trans),
         _ if a.starts_with("@") => parse_a(&a[1..]),
         _ if a.starts_with(":") => parse_k(a.bytes().nth(1)),
         _ if a.starts_with("F") => parse_f(&a[1..]),
