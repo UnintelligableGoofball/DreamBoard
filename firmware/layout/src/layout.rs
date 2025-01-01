@@ -41,7 +41,7 @@ fn parse_a(a: &'static str) -> Result<Action, LayoutErr> {
     macro_rules! hold_tap {
         ($hold:expr, $tap:expr) => {
             HoldTap(&HoldTapAction {
-                timeout: 200,
+                timeout: 100,
                 tap_hold_interval: 0,
                 config: HoldTapConfig::Default,
                 hold: $hold,
