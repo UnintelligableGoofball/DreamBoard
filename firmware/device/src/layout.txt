@@ -13,8 +13,8 @@ t       t       t       t       t       | t       t       t       t       t
 .       .       .       .       @LALT   | .       @LCTRL  .       .       .
 
 F1      F2      F3      F4      F5      | F6      F7      F8      F9      F10
-.       :7      :8      :9      @VUP    | .       .       .       .       @PSCR
-.       :4      :5      :6      @MUTE   | @PAUS   @TILD   @BKTK   @QUOT   @AMP
+.       :7      :8      :9      @VUP    | @RSTR   .       .       .       @PSCR
+.       :4      :5      :6      @MUTE   | .       @TILD   @BKTK   @QUOT   @AMP
 .       :1      :2      :3      @VDN    | .       .       .       .       .
 @EQ     :0      @DOT    @MINUS  @MUL    | .       .       .       @PIPE   .
 .       .       .       @DIV    @PLUS   | .       .       .       .       .
