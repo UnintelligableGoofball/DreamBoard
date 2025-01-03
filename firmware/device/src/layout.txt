@@ -1,6 +1,6 @@
 :1      :2      :3      :4      :5      | :6      :7      :8      :9      :0
 :Q      :W      :F      :P      :B      | :J      :L      :U      :Y      @ENT
-:A      :S      :R      :T      :G      | :M      :N      :E      :I      :O
+:A      :R      :S      :T      :G      | :M      :N      :E      :I      :O
 :Z      :X      :C      :D      :V      | :K      :H      @SEMI   @COMMA  @DOT
 @ESC    @LBRK   @RBRK   @LEFT   @UP     | L1      @BSP    @LGUI   @SLSH   @SHLETE
 .       .       .       @DOWN   @RIGHT  | L2      @SPC    .       .       .
@@ -13,8 +13,8 @@ t       t       t       t       t       | t       t       t       t       t
 .       .       .       .       @LALT   | .       @LCTRL  .       .       .
 
 .       .       .       .       .       | .       .       .       .       .
-.       7       8       9       .       | .       .       .       .       .
-.       4       5       6       .       | .       .       .       .       .
-.       1       2       3       .       | .       .       .       .       .
-@EQ     0       @DOT    @MINUS  @MUL    | .       .       .       @PIPE   .
+.       :7      :8      :9      .       | .       .       .       .       .
+.       :4      :5      :6      .       | .       .       .       .       .
+.       :1      :2      :3      .       | .       .       .       .       .
+@EQ     :0      @DOT    @MINUS  @MUL    | .       .       .       @PIPE   .
 .       .       .       @DIV    @PLUS   | .       .       .       .       .
