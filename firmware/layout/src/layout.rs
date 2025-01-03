@@ -29,7 +29,7 @@ fn parse_a(a: &'static str) -> Result<Action, LayoutErr> {
     const K_RPAR: Action = m(&[LeftShift, Keyboard0].as_slice());
     const K_LT: Action = m(&[LeftShift, Comma].as_slice());
     const K_GT: Action = m(&[LeftShift, Dot].as_slice());
-    const K_TILD: Action = m(&[LeftShift, NonUSHash].as_slice());
+    const K_TILD: Action = m(&[LeftShift, Grave].as_slice());
     const K_AMP: Action = m(&[LeftShift, Apostrophe].as_slice());
     const K_COLN: Action = m(&[LeftShift, Semicolon].as_slice());
     const K_QUMK: Action = m(&[LeftShift, ForwardSlash].as_slice());
