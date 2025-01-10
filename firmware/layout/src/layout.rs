@@ -37,6 +37,8 @@ fn parse_a(a: &'static str) -> Result<Action, LayoutErr> {
     const COPY: Action = m(&[LeftControl, C].as_slice());
     const PASTE: Action = m(&[LeftControl, V].as_slice());
     const UNDO: Action = m(&[LeftControl, Z].as_slice());
+    const K_ZIN: Action = m(&[LeftControl, LeftShift, Equal].as_slice());
+    const K_ZOUT: Action = m(&[LeftControl, Minus].as_slice());
 
     macro_rules! hold_tap {
         ($hold:expr, $tap:expr) => {
@@ -53,6 +55,8 @@ fn parse_a(a: &'static str) -> Result<Action, LayoutErr> {
     const K_SHLETE: Action = hold_tap!(k(LeftShift), DeleteForward);
 
     match a {
+        "ZOUT" => Ok(K_ZOUT),
+        "ZIN" => Ok(K_ZIN),
         "SHLETE" => Ok(K_SHLETE),
         "NUBS" => Ok(k(Backslash)),
         "PIPE" => Ok(K_PIPE),
