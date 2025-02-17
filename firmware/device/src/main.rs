@@ -19,7 +19,9 @@ mod app {
     use embedded_hal::{
         digital::v2::{InputPin, OutputPin},
         serial::{Read, Write},
+        spi::MODE_0,
     };
+    use fugit::RateExtU32;
     use frunk::{HCons, HNil};
     use fugit::RateExtU32;
     use keyberon::debounce::Debouncer;
@@ -29,7 +31,7 @@ mod app {
     use rp2040_monotonic::Rp2040Monotonic;
     use rp_pico::hal;
     use rp_pico::hal::prelude::*;
-    use rp_pico::hal::{gpio::dynpin::DynPin, pio::PIOExt, usb::UsbBus};
+    use rp_pico::hal::{spi::Spi, gpio::{dynpin::DynPin, Pins, FunctoinSpi}, pac, Sio, gpio::PIOExt, usb::UsbBus};
     use smart_leds::{SmartLedsWrite, RGB8};
     use usb_device::{
         bus::UsbBusAllocator,
@@ -53,7 +55,7 @@ mod app {
     >;
     type UsbCompositeClass<'a> = UsbHidClass<hal::usb::UsbBus, UsbCompositeInterfaceList>;
     type UsbDevice = usb_device::device::UsbDevice<'static, hal::usb::UsbBus>;
-    static mut USB_BUS: Option<UsbBusAllocator<hal::usb::UsbBus>> = None;
+    static mut USB_BUS: Option<UsbBusAllocator<hal::usb::UsbBus>> = None;1
 
     // Test PID from https://pid.codes/1209/
     const VID: u16 = 0x1209;
@@ -99,6 +101,11 @@ mod app {
             }
         }
     }
+
+    let mut peripheralr = pac::Peripherals::take().unwrap();
+    let sio = Sio::new(peripherals.SIO);
+    let pins = Pins::new(peripherals.IO_BANK0, peripherals.PADS_BANK0, sio.gpio_bank0, &mut peripherals.RESETS);
+
 
     #[monotonic(binds = TIMER_IRQ_0, default = true)]
     type Mono = Rp2040Monotonic;
