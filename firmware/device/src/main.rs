@@ -477,8 +477,8 @@ mod app {
 
     fn update_status_led(status_led: &mut StatusLed, status: StatusVal) {
         let led_color: RGB8 = match status {
-            StatusVal::Layer(1) => (0, 0, 20),
-            StatusVal::Layer(2) => (4, 0, 16),
+            StatusVal::Layer(1) => (0, 0, 4),
+            StatusVal::Layer(2) => (8, 0, 32),
             StatusVal::Bootloader => (8, 4, 0),
             _ => (0, 0, 0),
         }
