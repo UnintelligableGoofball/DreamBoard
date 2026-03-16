@@ -168,7 +168,7 @@ fn parse_f(s: &'static str) -> Result<Action, LayoutErr> {
 
 fn parse_l(c: Option<u8>) -> Result<Action, LayoutErr> {
     match c {
-        Some(c @ b'0'..=b'3') => {
+        Some(c @ b'0'..=b'4') => {
             let i = c - b'0';
             Ok(l(i.into()))
         }
@@ -178,7 +178,7 @@ fn parse_l(c: Option<u8>) -> Result<Action, LayoutErr> {
 
 fn parse_d(c: Option<u8>) -> Result<Action, LayoutErr> {
     match c {
-        Some(c @ b'0'..=b'3') => {
+        Some(c @ b'0'..=b'4') => {
             let i = c - b'0';
             Ok(d(i.into()))
         }

@@ -395,7 +395,7 @@ mod app {
 
             if layout.current_layer() != *cur_layer {
                 *cur_layer = layout.current_layer();
-                if *cur_layer != 3 {
+                if *cur_layer != 4 {
                     *rset_count = 0;
                 }
                 update_status_led(status_led, StatusVal::Layer(*cur_layer));
@@ -486,6 +486,7 @@ mod app {
         let led_color: RGB8 = match status {
             StatusVal::Layer(1) => (0, 0, 40),
             StatusVal::Layer(2) => (8, 0, 32),
+            StatusVal::Layer(3) => (12, 0, 28),
             StatusVal::Bootloader => (8, 4, 0),
             _ => (0, 0, 0),
         }
