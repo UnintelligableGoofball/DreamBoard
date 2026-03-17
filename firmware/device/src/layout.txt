@@ -20,8 +20,8 @@ F1      F2      F3      F4      F5      | F6      F7      F8      F9      F10
 .       .       .       @DIV    @PLUS   | .       @LSHFT  .       .       .
 
 t       t       t       t       t       | t       t       t       t       t
-:Q      :W      :E      :R      :T      | :Y      :U      :I      :O      :P
-:A      :S      :D      :F      :G      | :H      :J      :K      :L      @SEMI
-@LSHFT  :Z      :X      :C      :V      | :B      :N      :M      @SLSH   @ENT
-@TAB    .       .       @LCTRL  .       | .       @BSP    .       D0      .
-.       .       .       @SPC    .       | .       .       .       .       .
+@ESC    :Q      :W      :E      :R      | :7      :8      :9      :I      :O
+@LSHFT  :A      :S      :D      :F      | :4      :5      :6      :K      @SEMI
+@LCTRL  :Z      :X      :C      :V      | :1      :2      :3      @SLSH   @ENT
+@TAB    .       .       @SPC    @ENT    | .       L1      :0      D0      .
+.       .       .       .       @BSP    | .       .       .       .       .

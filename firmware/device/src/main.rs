@@ -486,7 +486,7 @@ mod app {
         let led_color: RGB8 = match status {
             StatusVal::Layer(1) => (0, 0, 40),
             StatusVal::Layer(2) => (8, 0, 32),
-            StatusVal::Layer(3) => (12, 0, 28),
+            StatusVal::Layer(3) => (18, 0, 26),
             StatusVal::Bootloader => (8, 4, 0),
             _ => (0, 0, 0),
         }
