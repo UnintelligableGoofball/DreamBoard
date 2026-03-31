@@ -46,7 +46,16 @@ mod app {
         UsbHidError,
     };
     use ws2812_pio::Ws2812Direct; //old lights code
+    use ssd1306
+    //display pinout:
+    // GP26/SCK1 -> SCL
+    // GP27/TX1 -> SDA
+    // GP18/SCK0 -> RST
+    // GP28/RX1 -> D/C
+    // GP29/CSn1 -> CS
+
     //use ws2812_pio::Ws2812;
+
 
     type UsbCompositeInterfaceList = HCons<
         ConsumerControlInterface<'static, UsbBus>,
