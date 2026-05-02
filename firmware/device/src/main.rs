@@ -19,6 +19,7 @@ mod app {
     use embedded_hal::{
         digital::v2::{InputPin, OutputPin},
         serial::{Read, Write},
+        spi::MODE_0,
     };
     use frunk::{HCons, HNil};
     use fugit::RateExtU32;
@@ -29,8 +30,16 @@ mod app {
     use rp2040_monotonic::Rp2040Monotonic;
     use rp_pico::hal;
     use rp_pico::hal::prelude::*;
-    use rp_pico::hal::{gpio::dynpin::DynPin, pio::PIOExt, usb::UsbBus};
+    use rp_pico::hal::{
+        gpio::{dynpin::DynPin, FunctionSpi, Pins},
+        pac,
+        pio::PIOExt,
+        spi::Spi,
+        usb::UsbBus,
+        Sio,
+    };
     use smart_leds::{SmartLedsWrite, RGB8};
+    use ssd1306;
     use usb_device::{
         bus::UsbBusAllocator,
         device::{UsbDeviceBuilder, UsbDeviceState, UsbVidPid},
@@ -46,16 +55,14 @@ mod app {
         UsbHidError,
     };
     use ws2812_pio::Ws2812Direct; //old lights code
-    use ssd1306
-    //display pinout:
-    // GP26/SCK1 -> SCL
-    // GP27/TX1 -> SDA
-    // GP18/SCK0 -> RST
-    // GP28/RX1 -> D/C
-    // GP29/CSn1 -> CS
+                                  //display pinout:
+                                  // GP26/SCK1 -> SCL
+                                  // GP27/TX1 -> SDA
+                                  // GP18/SCK0 -> RST
+                                  // GP28/RX1 -> D/C
+                                  // GP29/CSn1 -> CS
 
     //use ws2812_pio::Ws2812;
-
 
     type UsbCompositeInterfaceList = HCons<
         ConsumerControlInterface<'static, UsbBus>,
@@ -116,7 +123,7 @@ mod app {
 
     const KBD_SCAN_PERIOD: Duration = Duration::millis(1);
     const USB_KBD_TICK_PERIOD: Duration = Duration::millis(1);
-    
+
     #[shared]
     struct Shared {
         layout: Layout,
@@ -126,7 +133,6 @@ mod app {
         rxbuf: [u8; 4],
         //touchpad: Option<Touchpad>,
     }
-    
 
     #[local]
     struct Local {
@@ -215,8 +221,7 @@ mod app {
         ];
         let kbd_state = KeyboardState::new(rows, cols);
 
-        let delay =
-            cortex_m::delay::Delay::new(c.core.SYST, clocks.system_clock.freq().to_Hz());
+        let delay = cortex_m::delay::Delay::new(c.core.SYST, clocks.system_clock.freq().to_Hz());
 
         let (mut pio, sm0, _, _, _) = c.device.PIO0.split(&mut resets);
         let mut status_led = Ws2812Direct::new(
@@ -248,7 +253,7 @@ mod app {
             //.add_interface(WheelMouseInterface::default_config())
             .build(&usb_bus);
         let usb_dev = UsbDeviceBuilder::new(usb_bus, UsbVidPid(VID, PID))
-        //FIXED THESE
+            //FIXED THESE
             .manufacturer("Blue")
             .product("DreamBoard")
             .serial_number(env!("CARGO_PKG_VERSION"))
@@ -277,6 +282,38 @@ mod app {
             transform,
             delay,
         };
+
+        // screen inits
+        //display pinout:
+        // GP26/SCK1 -> SCL
+        // GP27/TX1 -> SDA
+        // GP18/SCK0 -> RST
+        // GP28/RX1 -> D/C
+        // GP29/CSn1 -> CS
+
+        let mut peripherals = pac::Peripherals::take().unwrap();
+        let sio = Sio::new(peripherals.SIO);
+        let pins = Pins::new(
+            peripherals.IO_BANK0,
+            peripherals.PADS_BANK0,
+            sio.gpio_bank0,
+            &mut peripherals.RESETS,
+        );
+
+        let sclk = pins.gpio26.into_function::<FunctionSpi>();
+        let mosi = pins.gpio27.into_function::<FunctionSpi>();
+        let miso = pins.gpio28.into_function::<FunctionSpi>();
+
+        let spi_device = peripherals.SPI0;
+        let spi_pin_layout = (mosi, miso, sclk);
+
+        let spi = Spi::<_, _, _, 8>::new(spi_device, spi_pin_layout).init(
+            &mut peripherals.RESETS,
+            125_000_000u32.Hz(),
+            16_000_000u32.Hz(),
+            MODE_0,
+        );
+
         (shared, local, init::Monotonics(timer_mono))
     }
 
