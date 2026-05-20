@@ -16,6 +16,7 @@ mod app {
     use defmt_rtt as _;
 
     use ::layout::*;
+    use embedded_graphics::mono_font::{ascii::FONT_6X10, MonoTextStyleBuilder};
     use embedded_hal::{
         digital::v2::{InputPin, OutputPin},
         serial::{Read, Write},
