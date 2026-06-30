@@ -29,8 +29,9 @@ mod app {
     use rp2040_monotonic::Rp2040Monotonic;
     use rp_pico::hal;
     use rp_pico::hal::prelude::*;
-    use rp_pico::hal::{gpio::dynpin::DynPin, pio::PIOExt, usb::UsbBus};
+    use rp_pico::hal::{gpio::dynpin::DynPin, i2c::I2C, pac, pio::PIOExt, usb::UsbBus, Sio};
     use smart_leds::{SmartLedsWrite, RGB8};
+    use ssd1306::{prelude::*, I2CDisplayInterface, Ssd1306};
     use usb_device::{
         bus::UsbBusAllocator,
         device::{UsbDeviceBuilder, UsbDeviceState, UsbVidPid},
@@ -46,7 +47,6 @@ mod app {
         UsbHidError,
     };
     use ws2812_pio::Ws2812Direct; //old lights code
-    //use ws2812_pio::Ws2812;
 
     type UsbCompositeInterfaceList = HCons<
         ConsumerControlInterface<'static, UsbBus>,
@@ -107,7 +107,7 @@ mod app {
 
     const KBD_SCAN_PERIOD: Duration = Duration::millis(1);
     const USB_KBD_TICK_PERIOD: Duration = Duration::millis(1);
-    
+
     #[shared]
     struct Shared {
         layout: Layout,
@@ -117,7 +117,6 @@ mod app {
         rxbuf: [u8; 4],
         //touchpad: Option<Touchpad>,
     }
-    
 
     #[local]
     struct Local {
@@ -206,8 +205,7 @@ mod app {
         ];
         let kbd_state = KeyboardState::new(rows, cols);
 
-        let delay =
-            cortex_m::delay::Delay::new(c.core.SYST, clocks.system_clock.freq().to_Hz());
+        let delay = cortex_m::delay::Delay::new(c.core.SYST, clocks.system_clock.freq().to_Hz());
 
         let (mut pio, sm0, _, _, _) = c.device.PIO0.split(&mut resets);
         let mut status_led = Ws2812Direct::new(
@@ -217,6 +215,19 @@ mod app {
             clocks.peripheral_clock.freq(),
         );
         update_status_led(&mut status_led, StatusVal::Layer(0));
+
+        // for the display
+        let mut peripherals = pac::Peripherals::take().unwrap();
+        let mut i2c = I2C::i2c1(
+            peripherals.I2C1,
+            pins.gpio26.reconfigure(),
+            pins.gpio27.reconfigure(),
+            400.kHz(),
+            &mut peripherals.RESETS,
+            125_000_000.Hz(),
+        );
+
+        let displayInterface = I2CDisplayInterface::new(i2c);
 
         // Set up the USB driver
         let usb_bus = UsbBusAllocator::new(hal::usb::UsbBus::new(
@@ -235,11 +246,8 @@ mod app {
         let usb_class = UsbHidClassBuilder::new()
             .add_interface(NKROBootKeyboardInterface::default_config())
             .add_interface(ConsumerControlInterface::default_config())
-            //touchpad thing i think
-            //.add_interface(WheelMouseInterface::default_config())
             .build(&usb_bus);
         let usb_dev = UsbDeviceBuilder::new(usb_bus, UsbVidPid(VID, PID))
-        //FIXED THESE
             .manufacturer("Blue")
             .product("DreamBoard")
             .serial_number(env!("CARGO_PKG_VERSION"))
@@ -259,7 +267,6 @@ mod app {
             usb_class,
             uart,
             rxbuf: [0; 4],
-            //touchpad,
         };
         let local = Local {
             kbd_state,
@@ -486,6 +493,10 @@ mod app {
         .into();
         let led_array = [led_color; 7];
         status_led.write(led_array.iter().copied()).unwrap();
+    }
+
+    fn update_display(display: &mut Display) {
+        //todo
     }
 
     fn do_reset() {
