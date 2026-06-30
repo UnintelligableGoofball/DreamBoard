@@ -301,9 +301,9 @@ mod app {
             &mut peripherals.RESETS,
         );
 
-        let sclk = pins.gpio26.into_function::<FunctionSpi>();
-        let mosi = pins.gpio27.into_function::<FunctionSpi>();
-        let miso = pins.gpio28.into_function::<FunctionSpi>();
+        let sclk = pins.gpio26.into_mode::<FunctionSpi>();
+        let mosi = pins.gpio27.into_mode::<FunctionSpi>();
+        let miso = pins.gpio28.into_mode::<FunctionSpi>();
 
         let spi_device = peripherals.SPI0;
         let spi_pin_layout = (mosi, miso, sclk);
@@ -312,7 +312,7 @@ mod app {
             &mut peripherals.RESETS,
             125_000_000u32.Hz(),
             16_000_000u32.Hz(),
-            MODE_0,
+            &MODE_0,
         );
 
         (shared, local, init::Monotonics(timer_mono))
@@ -534,6 +534,8 @@ mod app {
         let led_array = [led_color; 7];
         status_led.write(led_array.iter().copied()).unwrap();
     }
+
+    fn update_display() {}
 
     fn do_reset() {
         hal::rom_data::reset_to_usb_boot(0, 0);
